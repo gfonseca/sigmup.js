@@ -18,7 +18,6 @@ class Game {
     render() {
       this.clear();
       this.colideGroups();
-      console.log(this.gameActors);
       this.gameActors.forEach((actor)=>{
         actor.update();
         actor.draw(this.context);
