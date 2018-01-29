@@ -18,8 +18,18 @@ class ColisionRegistration {
         }
       }    
     }
-  
+    
+    removeDead () {
+      for (var i in this.actors) {
+        if(!this.actors[i].isAlive()) {
+          delete this.actors[i];
+          this.actors.splice(i ,1);
+        }
+      }
+    }
+
     selfColide(callback) {
+      this.removeDead();
       for (var i = 0; i < this.actors.length - 1; i++) {
         for (var j = i; j < this.actors.length - 1; j++) {
            var a = this.actors[i];
@@ -35,10 +45,10 @@ class ColisionRegistration {
     }
   
     colide(groupB, callback) {
+      this.removeDead();
       if( ! groupB instanceof ActorsGroup ) {
         throw "groupB must be instance of ActorsGroupvou";
       }
-      
       for (var i = 0; i <= this.actors.length - 1; i++) {
         var a = this.actors[i];
         for (var j = 0; j <= groupB.actors.length - 1; j++) {

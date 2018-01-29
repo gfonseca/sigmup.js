@@ -18,10 +18,18 @@ class Game {
     render() {
       this.clear();
       this.colideGroups();
+      console.log(this.gameActors);
       this.gameActors.forEach((actor)=>{
         actor.update();
         actor.draw(this.context);
       });
+
+      for(var i in this.gameActors){
+        if(!this.gameActors[i].isAlive()) {
+          delete this.gameActors[i];
+          this.gameActors.splice(i, 1);
+        }
+      }
     }
   
     addActor(a) {
