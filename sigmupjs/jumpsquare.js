@@ -2,125 +2,82 @@ import Game from "./src/Game";
 import ActorsGroup from "./src/Group";
 import Actor from "./src/Actor";
 import {Square} from "./src/Actor";
-
+import {Friction, Physics, Vector} from "./src/Moves";
+var colors = ['coral', 'aqua', 'red', 'green', 'blue', 'yellow', 'purple', 'brown', 'cyan', 'white', 'magenta', 'pink', 'turquoise'];
 export default function jumpingSquare() {
-  var g = new Game("black", "gameScreen" );
-
   function randRange(min, max) {
     return Math.random() * (max - min) + min;
   }
 
-  class vector {
-    constructor(vectorAttr) {
-      this.speed_x = vectorAttr.speed_x;
-      this.speed_y = vectorAttr.speed_y;
+  var g = new Game("black", "gameScreen");
+  g.addGlobalVector(new Vector({vx: 0,  vy:0.5 }));
+  
+  var cyan_sqrs = [];
+  for (var i = 0; i < 12; i++) {
+    cyan_sqrs.push(
+      new Square({
+      boundary:true,
+      x:randRange(0, g.canvas.width),
+      y:randRange(0, g.canvas.height-100),
+      color:"grey",
+      width: 50,
+      height:50,
+      speed_x:0,
+      speed_y:0})
+    );
+  } 
+  
+  g.addActor(cyan_sqrs);
+
+  var groupSquares = new ActorsGroup(cyan_sqrs);
+  
+  var floor =  new Square({
+    boundary:true,
+    x:0,
+    y:g.canvas.height-10,
+    color:"red",
+    width: g.canvas.width,
+    height:10,
+    speed_x:0,
+    speed_y:0});
+
+  var groupBounds = new ActorsGroup([floor]);
+  g.addActor(floor);
+
+  g.registerColisionGroups((b, s)=>{
+    s.color = colors[Math.round(randRange(0, colors.length - 1))];
+    s.speed_y *= -1;
+    
+    if(s.y+s.height > b.y) {
+      s.y = b.y-s.height
     }
-
-    revertX() {
-      this.speed_x *= -1;
-    }
-
-    revertY() {
-      this.speed_y *= -1;
-    }
-  }
-
-  class Player extends Square{
-    constructor(bulletAtr) {
-      super(bulletAtr);
-      this.color = bulletAtr.color;
-
-      this.vectorQueue = [];
-
-      this.speed_x = typeof (bulletAtr.speed_x) === "undefined" ? 10 : bulletAtr.speed_x ;
-      this.speed_y = typeof (bulletAtr.speed_y) === "undefined" ?  10 : bulletAtr.speed_y;
-    }
-
-    addVector(vec) {
-      this.vectorQueue.push(vec);
-    }
-
-    update() {
-      if(
-        this.x + this.width >= g.canvas.width || 
-        this.x < 0 ||
-        this.y + this.height > g.canvas.height ||
-        this.y < 0
-      ) {
-        this.x = 0;
-      }
-      
-      this.vectorQueue.forEach((v)=>{
-        this.speed_y += v.speed_y;
-        this.speed_x += v.speed_x;;
-      })
-      
-      if(this.speed_x >= 15) {
-        this.speed_x = 15;
-      }
-
-      if(this.speed_x <= 0) {
-        this.speed_x = 0;
-      }
-
-      if(this.speed_x <= -15) {
-        this.speed_x = -15;
-      }
-      this.x += this.speed_x * randRange(0.7, 0.9);
-      this.y += this.speed_y* randRange(0.7, 0.9);
-
-      if(this.y + this.height  >= g.canvas.height - 20) {  
-        this.y = g.canvas.height -this.height - 20;  
-        this.speed_y *=  -1; 
-        this.speed_y +=  4.5;          
-      }
-
-      console.log({
-        x: this.x,
-        y: this.y,
-        speed_y: this.speed_y
-      });
-    }
-  }
-
-  var sqr = new Player({x:100, y:300, color:"red", width: 50, height:50, speed_x:0, speed_y:0});
-
-  sqr.addVector(new vector({speed_x:0, speed_y: 0.9}));
-  sqr.addVector(new vector({speed_x:2, speed_y: -2}));
-
-  g.addActor(sqr);
+  }, groupBounds, groupSquares);
 
   document.addEventListener("keydown", (e)=>{
-    var acc = 0.5;
-    var breaks = 10;
     if(e.key == "ArrowLeft") {
-      
+      sqr.speed_x = -10;
     }
     
     if(e.key == "ArrowRight") {
-      sqr.speed_x = 50;
+      sqr.speed_x = 10;
     }
-
 
     if(e.key == "ArrowUp") {
-        sqr.speed_y += acc * -1;    
+      sqr.speed_y = -10;
     }
-
 
     if(e.key == "ArrowDown") {
-        sqr.speed_y += acc;    
-    }
-
-    if(e.key == " ") {
-            sqr.speed_y = -15;
+      sqr.speed_y = 10;
     }
 
     if(e.key == ".") {
       g.render();
     }
-});
 
+    if(e.key == " ") {
+      sqr.setSpeedY(-85);
+    }
+  }); 
 
-
-  g.loop(20);
+  g.loop(60);
 }
