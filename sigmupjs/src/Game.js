@@ -1,5 +1,5 @@
 import { ColisionRegistration } from "./Group";
-import Physics from "./Moves";
+import physics from "./Moves";
 
 class Game {
   constructor(backgroundColor, canvasId) {
@@ -12,8 +12,6 @@ class Game {
     this.lastTime = (new Date()).getTime();
     this.currentTime = 0;
     this.delta = 0;
-
-    this.physics = new Physics();
   }
   
   clear() {
@@ -44,7 +42,7 @@ class Game {
     this.clear();
     this.colideGroups();
     this.gameActors.forEach((actor)=>{
-      this.physics.update(actor);
+      actor.update();
       if(actor.boundary) {
         this.bound(actor);
       }
@@ -92,14 +90,6 @@ class Game {
       this.render();
       this.lastTime = this.currentTime - (this.delta % this.interval);
     }
-  }
-
-  addGlobalVector (vec){
-    this.physics.addGlobalVector(vec);
-  }
-
-  addGlobalFrictions (frc){
-    this.physics.addGlobalFriction(frc);
   }
 }
 

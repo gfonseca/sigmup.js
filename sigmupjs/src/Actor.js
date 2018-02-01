@@ -13,7 +13,7 @@ class Actor{
 
         this.frictionQueue = [];
         this.vectorQueue = [];
-        
+
         var _live = true;
         this.isAlive = function() {
             return _live;

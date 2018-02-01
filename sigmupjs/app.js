@@ -1,2 +1,2 @@
-import game from "./jumpsquare";
-game();
+// import game from "./jumpsquare";
+// game();

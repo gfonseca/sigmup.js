@@ -43,16 +43,16 @@ class ColisionRegistration {
         }
       };
     }
-
+  
     colide(groupB, callback) {
       this.removeDead();
       if( ! groupB instanceof ActorsGroup ) {
-        throw "groupB must be instance of ActorsGroup";
+        throw "groupB must be instance of ActorsGroupvou";
       }
       for (var i = 0; i <= this.actors.length - 1; i++) {
         var a = this.actors[i];
         for (var j = 0; j <= groupB.actors.length - 1; j++) {
-           var b = groupB.actors[j];
+           var b = groupB.actors[j];         
            if (a.x < b.x + b.width &&
                a.x + a.width > b.x &&
                a.y < b.y + b.height &&
@@ -62,31 +62,6 @@ class ColisionRegistration {
         }
       };
     }
-
-    addVector(vec) {
-      this.actors.forEach((a)=>{
-        a.addVector(vec);
-      })
-    }
-
-    addFriction(frc) {
-      this.actors.forEach((a)=>{
-        a.addFriction(frc);
-      })
-    }
-
-    clearVector(vec) {
-      this.actors.forEach((a)=>{
-        a.clearVectorQueue(vec);
-      })
-    }
-
-    clearFriction(frc) {
-      this.actors.forEach((a)=>{
-        a.clearFrictionQueue();
-      })
-    }
-
   }
 
   export default ActorsGroup;
