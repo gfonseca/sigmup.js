@@ -147,12 +147,12 @@ describe("Dynamica.Body", function (){
             var b = new Body();
             b.addVector(new Vector());
             assert.equal(b.vectors.length, 1, "Failed to add a Vector.");
-
+            
             b.addVector(new Vector());
             assert.equal(b.vectors.length, 2, "Failed to add a Vector.");
         });
     });
-
+    
     describe("#clearVector()", function(){
         it("it should clear the vector list", function(){
             var b = new Body();
@@ -163,7 +163,7 @@ describe("Dynamica.Body", function (){
             assert.equal(b.vectors.length, 0, "Failed to clar Vector list.");        
         });
     });
-
+    
     describe("#clearFriction()", function(){
         it("it should a default friction", function(){
             var b = new Body({friction: new Friction({fx: 0.5, fy: 0.2})});
@@ -173,7 +173,7 @@ describe("Dynamica.Body", function (){
             assert.equal(b.friction.fy, 1, "Failed set the default Friction");
         });
     });
-
+    
     describe("#setSpeedX()", function(){
         it("it should define a speed for Body.speed_x ", function(){
             var b = new Body();
@@ -184,21 +184,39 @@ describe("Dynamica.Body", function (){
         });
     });
     
-    describe("#colide()", function(){
-        it("it should return if a body is coliding with another", function(){
+    describe("#collide()", function(){
+        it("it should return if a body is colliding with another", function(){
             var a = new Body({rect: new Rect({width: 100, height:100})});
-            var b = new Body({rect: new Rect({width: 100, height: 100, x:90, y:90})});
-
-            assert.ok(a.colide(b), "State coliding wrong return");
+            var b = new Body({rect: new Rect({width: 100, height: 100})});
             
-            b.rects[0].x = 110;
-
-           assert.notOk(a.colide(b), "State not coliding wrong return");
+            assert.ok(a.collide(b), "State colliding wrong return");
+            
+            b.x = 150;
+            
+            assert.notOk(a.collide(b), "State not colliding wrong return");
+            
+            b.setRects([
+                new Rect({x: 10, y: 10}),
+                new Rect({x: -51, y: 20})
+            ])
+            
+            assert.ok(a.collide(b), "State not colliding wrong return. rect B 2 squares");            
         });
     });
-
-    // it.skip("it should define a default value for Body.", function(){
-    //     var b = new Body();
-    //     assert.equal(b, false);
-    // });
+    
+    describe("#setXY()", function(){
+        it("it should return if a body is colliding with another", function(){
+            var b = new Body();
+            assert.equal(b.x, 0);
+            
+            b.setXY({x: 10});
+            assert.equal(b.x, 10, "b.x must be 10 wrong value.");
+        
+            b.setXY({y: 20});
+            assert.equal(b.y, 20, "b.y must be 20 wrong value.");
+            
+            b.setXY();
+            assert.equal(b.x, 10, "b.x must be 10 wrong value.");
+        });
+    });
 });

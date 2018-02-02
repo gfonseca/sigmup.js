@@ -11,8 +11,6 @@ class World {
         this.bodies = worldParams.bodies || [];
     }
     
-    
-    
     calcPhysicsToActors(actors){
         actors.forEach((a)=>{
             this.update(a);
@@ -74,6 +72,9 @@ class Rect {
 class Body {
     constructor(bodyParams) {
         bodyParams = bodyParams || {};
+        
+        this.x =  Number(bodyParams.x) || 0;
+        this.y = Number(bodyParams.y) || 0;
         
         this.speed_x = Number(bodyParams.speed_x) || 0;
         this.speed_y = Number(bodyParams.speed_y) || 0;
@@ -178,16 +179,16 @@ class Body {
         return this.rects;
     }
     
-    colide(bodyB) {
+    collide(bodyB) {
         for (var i = 0; i <= this.rects.length - 1; i++) {
             var a = this.rects[i];
             for (var j = 0; j <= bodyB.rects.length - 1; j++) {
                 var b = bodyB.rects[j];         
                 if (
-                    a.x < b.x + b.width 
-                    && a.x + a.width > b.x 
-                    && a.y < b.y + b.height 
-                    && a.height + a.y > b.y
+                    a.x + this.x < bodyB.x + b.x + b.width 
+                    && this.x + a.x + a.width > b.x + bodyB.x 
+                    && a.y + this.y < b.y + b.height + bodyB.y
+                    && a.height + a.y + this.y  > b.y + bodyB.y
                 ) {
                     return true;
                 }
@@ -195,22 +196,96 @@ class Body {
         }
         return false;
     }
-}
     
-    class Vector {
-        constructor (vecAttr) {
-            vecAttr = vecAttr || {};
-            this.vx = vecAttr.vx || 0;
-            this.vy = vecAttr.vy || 0;
+    setXY(xy) {
+        xy = xy || {};
+        
+        if(!xy.x && !xy.y) {
+            return;
+        }
+        
+        this.x = xy.x || this.x;
+        this.y = xy.y || this.y;
+    }
+}
+
+class CollisionGroup {
+    constructor(colliders) {
+        this.colliders = [];
+        
+        if(Array.isArray(colliders)){ 
+            this.colliders = this.colliders.concat(colliders);
+        }
+        
+        if(colliders instanceof Body) { 
+            this.colliders.push(colliders);
         }
     }
     
-    class Friction {
-        constructor (frcAttr) {
-            frcAttr = frcAttr || {}
-            this.fx = frcAttr.fx || 1; 
-            this.fy = frcAttr.fy || 1;
-        }  
+    addCollider(collider) {
+        this.colliders.push(collider);
     }
     
-    export {Body, Rect, Friction, Vector};
+    selfCollide(callback) {
+        this.removeDead();
+        for (var i = 0; i < this.colliders.length - 1; i++) {
+            for (var j = i; j < this.colliders.length - 1; j++) {
+                var a = this.colliders[i];
+                var b = this.colliders[j+1];
+                if (a.collide(b)) {
+                    callback(a, b);
+                }
+            }
+        }
+    }
+    
+    collideWithGroupB(callback, groupB){
+        this.removeDead();
+        if( ! groupB instanceof CollisionGroup ) {
+            throw "groupB must be instance of ActorsGroupvou";
+        }
+        for (var i = 0; i <= this.colliders.length - 1; i++) {
+            var a = this.colliders[i];
+            for (var j = 0; j <= groupB.colliders.length - 1; j++) {
+                var b = groupB.colliders[j];         
+                if (a.collide(b)) {
+                    callback(a, b);
+                }
+            }
+        }
+    }
+
+    removeDead() {
+        for (var i in this.colliders) {
+            if(!this.colliders[i].isAlive()) {
+                this.colliders.splice(i, 1);
+            }
+        }
+    }
+}
+
+class CollisionRegistration {
+    constructor(callback, groupA, groupB) {
+        this.groupA = groupA;
+        this.groupB = groupB;
+        this.callback = callback;
+    }
+}
+
+class Vector {
+    constructor (vecAttr) {
+        vecAttr = vecAttr || {};
+        this.vx = vecAttr.vx || 0;
+        this.vy = vecAttr.vy || 0;
+    }
+}
+
+class Friction {
+    constructor (frcAttr) {
+        frcAttr = frcAttr || {}
+        this.fx = frcAttr.fx || 1; 
+        this.fy = frcAttr.fy || 1;
+    }  
+}
+
+export {Body, Rect, Friction, Vector, CollisionGroup};
