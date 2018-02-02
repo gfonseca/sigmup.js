@@ -1,47 +1,89 @@
 class World {
     constructor(worldParams) {
-        if(!Array.isArray(worldParams.collisionRegs) && typeof(worldParams.collisionRegs) !== "undefined") {
-            throw "worldParams.collisionRegs must be array in World.constructor().";
-        } else{
-            this.collisionRegistrations = [];
-        }
-        
-        this.globalVectors = worldParams.globalVecs || [];
-        this.globalFriction = worldParams.globalFric || null;
+        worldParams = worldParams || {};
+
+        this.collisionRegistrations = [];
+        this.vectors = worldParams.vectors || [];
+        this.friction = worldParams.friction || null;
         this.bodies = worldParams.bodies || [];
     }
+
+    registerBody(body) {
+        if(Array.isArray(body)) {
+            this.bodies = this.bodies.concat(body);    
+        }else{
+            this.bodies.push(body);
+        }
+    }
+
+    addVector(vector) {
+        if(Array.isArray(vector)) {
+            this.vectors = this.vectors.concat(vector);
+        }else{
+            this.vectors.push(vector);
+        }
+    }
     
-    calcPhysicsToActors(actors){
-        actors.forEach((a)=>{
+    addFriction(friction) { 
+        this.friction = friction;
+    }
+
+    getVectorsSum() {
+        var x = 0;
+        var y = 0;
+
+        this.vectors.forEach(function(vec){
+            x += vec.vx;
+        });
+
+        this.vectors.forEach(function(vec){
+            y += vec.vy;
+        });
+
+        return {vx:x, vy:y};
+    }
+
+    clearFriction() {
+        this.friction = null;
+    }
+
+    clearVectors() {
+        this.vectors = [];
+    }
+
+    walk(actors){
+        actors.forEach(function(a){
             this.update(a);
         });
     }
     
-    update(actor) {
-        var frx = 1;
-        var fry = 1;
+    update(body) {
+        var frx = this.friction.fx || 1;
+        var fry = this.friction.fy || 1;
         
-        (actor.frictionQueue.concat(this.globalVectors)).forEach((f)=>{
-            frx = f.fx;
-            fry = f.fy;
-        });
+        if(body.friction) {
+            frx = body.friction.fx;
+            fry = body.friction.fy;
+        }
+        
         
         var vecx = 0;
         var vecy = 0;
         
-        (actor.vectorQueue.concat()).forEach((v)=>{
+        (body.vectors.concat(this.vectors)).forEach((v)=>{
             vecx += v.vx;
             vecy += v.vy;
         });
         
-        actor.speed_x += vecx;
-        actor.speed_y += vecy;
+        body.speed_x += vecx;
+        body.speed_y += vecy;
         
-        actor.speed_x = actor.speed_x * frx;
-        actor.speed_y = actor.speed_y * fry;
+        console.log(body.friction, this.friction, " <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< ");
+        body.speed_x = body.speed_x * frx;
+        body.speed_y = body.speed_y * fry;
         
-        actor.x += actor.speed_x;
-        actor.y += actor.speed_y;
+        body.x += body.speed_x;
+        body.y += body.speed_y;
     }
 }
 
@@ -91,7 +133,7 @@ class Body {
         
         this.rects = [];
         this.vectors = [];
-        this.friction = new Friction({});
+        this.friction = null;
         
         this.setRects(bodyParams.rect);
         this.applyVectors(bodyParams.vectors);
@@ -266,9 +308,11 @@ class CollisionGroup {
 
 class CollisionRegistration {
     constructor(callback, groupA, groupB) {
+        callback = callback || [];
+
         this.groupA = groupA;
         this.groupB = groupB;
-        this.callback = callback;
+        this.callback = Array.isArray(callback) ? callback : [callback];
     }
 }
 
@@ -288,4 +332,4 @@ class Friction {
     }  
 }
 
-export {Body, Rect, Friction, Vector, CollisionGroup};
+export {Body, Rect, Friction, Vector, CollisionGroup, World};
