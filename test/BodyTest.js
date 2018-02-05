@@ -126,9 +126,6 @@ describe("Dynamica.Body", function (){
         });
         
         it("it should define a default value for Body.friction", function(){
-            var b = new Body();
-            assert.ok(b.friction instanceof Friction, "Default value for friction musbe type of Friction.");
-            
             var b = new Body({friction: new Friction({fx:0.5})});
             assert.equal(b.friction.fx , 0.5, "Friction is not being setted properly in Body");
             assert.ok(b.friction instanceof Friction,  "Friction is not being setted properly in Body");
