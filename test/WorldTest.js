@@ -84,7 +84,6 @@ describe("Dynamica.World", function(){
             var checkCollisionB = false;
             
             var w = new World();
-            
             w.registerCollision([
                 (a, b)=>{
                     checkCollisionA = true;
@@ -93,7 +92,7 @@ describe("Dynamica.World", function(){
                     checkCollisionB = true;
                 }
             ], groupA);
-            
+
             w.collideGroups();
             assert.ok(checkCollisionA);
             assert.ok(checkCollisionB);
@@ -133,7 +132,7 @@ describe("Dynamica.World", function(){
             assert.equal(w.collisionRegistrations.length, 1);
             
             assert.ok(w.collisionRegistrations[0] instanceof CollisionRegistration);
-            
+
             w.registerCollision(()=>{}, "GroupA", "GroupB");
             assert.equal(w.collisionRegistrations.length, 2)
         });
