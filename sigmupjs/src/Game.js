@@ -8,6 +8,7 @@ class Game {
     this.context = this.canvas.getContext("2d");
     this.gameActors = [];
     this.colisionReg = [];
+    this.world = null;
     this.interval = 1000/60;
     this.lastTime = (new Date()).getTime();
     this.currentTime = 0;
@@ -40,6 +41,17 @@ class Game {
   
   render() {
     this.clear();
+    this.removeDead();
+    this.world.walk();
+    this.run();
+    this.gameActors.forEach((actor)=>{
+      actor.draw(this.context);
+    });
+    
+  }
+
+  render2() {
+    this.clear();
     this.colideGroups();
     this.gameActors.forEach((actor)=>{
       actor.update();
@@ -63,6 +75,13 @@ class Game {
     } else {
       this.gameActors.push(a);
     }
+    if(Array.isArray(a)) {
+      a.forEach((ac)=>{
+        this.world.registerBody(ac.body);  
+      });
+    }else{
+      this.world.registerBody(a.body);
+    }
   }
   
   colideGroups() {
@@ -74,22 +93,30 @@ class Game {
       }
     });
   }
+
+  removeDead() {
+    for (var i in this.gameActors) {
+        if(!this.gameActors[i].isAlive()) {
+            this.gameActors.splice(i, 1);
+        }
+    }
+}
   
   registerColisionGroups(callback, groupA, groupB){
     this.colisionReg.push(new ColisionRegistration(callback, groupA, groupB));
   }
   
   loop(fps) {
-    window.requestAnimationFrame(()=>{
-      this.loop();
-    });
-    
     this.currentTime = (new Date()).getTime();
     this.delta = (this.currentTime - this.lastTime);
     if(this.delta > this.interval) {
       this.render();
       this.lastTime = this.currentTime - (this.delta % this.interval);
     }
+
+    window.requestAnimationFrame(()=>{
+      this.loop();
+    });
   }
 }
 
