@@ -84,7 +84,7 @@ describe("Dynamica.World", function(){
             var checkCollisionB = false;
             
             var w = new World();
-                        
+            
             w.registerCollision([
                 (a, b)=>{
                     checkCollisionA = true;
@@ -93,7 +93,7 @@ describe("Dynamica.World", function(){
                     checkCollisionB = true;
                 }
             ], groupA);
-
+            
             w.collideGroups();
             assert.ok(checkCollisionA);
             assert.ok(checkCollisionB);
@@ -139,54 +139,59 @@ describe("Dynamica.World", function(){
         });
     });
     
-    describe("#update()", function(){
-        it("it should update Body.yx in 1 px through World.vectors and Body.vectors.", function(){
+    describe("#applyVectors()", function(){
+        it("it should update Body.speed_x in World.vectors and Body.vectors.", function(){
             var w = new World({vectors: new Vector({vx: 1}) });
             var b = new Body({vectors: new Vector({vx: 2}) });
             
-            w.update(b);
-            assert.equal(b.x, 3, "Error adding boxy.x 3 pixels.");
+            w.applyVectors(b);
+            assert.equal(b.speed_x, 3, "Error adding boxy.x 3 pixels.");
             
-            w.update(b);
-            assert.equal(b.x, 9, "Error adding boxy.x 3 pixels.");
+            w.applyVectors(b);
+            assert.equal(b.speed_x, 6, "Error adding boxy.x 3 pixels.");
+            
+            w.applyVectors(b);
+            assert.equal(b.speed_x, 9, "Error adding boxy.x 3 pixels.");
         });
         
-        it("it should update Body.y in 1 px through the World.vectors.", function(){
+        it("it should update Body.speed_y by World.vectors.", function(){
             var b = new Body();
             var w = new World({vectors: new Vector({vy: 1})});
             
-            w.update(b);
-            assert.equal(b.y, 1, "Error adding body.y 1 pixel");
+            w.applyVectors(b);
+            assert.equal(b.speed_y, 1, "Error adding body.speed_y");
             
             var w = new World({vectors: [new Vector({vy: 1}), new Vector({vy: 3})]});
             var b = new Body();
-            w.update(b);
-            assert.equal(b.y, 4, "Error adding body.y 4 pixels");
+            w.applyVectors(b);
+            assert.equal(b.speed_y, 4, "Error adding body.y 4 pixels");
         });
         
-        it("it should update Body.x through Body.vectors.", function(){
+        it("it should update Body.speed_x through Body.vectors.", function(){
             var b = new Body({vectors: new Vector({vx:1, vy:1})});
             var w = new World();
             
-            w.update(b);
-            assert.equal(b.x, 1, "Error adding body.x 1 pixel");
+            w.applyVectors(b);
+            assert.equal(b.speed_x, 1, "Error adding body.speed_x");
             
             var b = new Body({vectors: new Vector({vx:4, vy:1})});
             var w = new World();
             
-            w.update(b);
-            assert.equal(b.x, 4, "Error adding body.x 1 pixel");
+            w.applyVectors(b);
+            assert.equal(b.speed_x, 4, "Error adding body.speed_x");
             
-            w.update(b);
-            assert.equal(b.y, 3, "Error adding body.y 3 pixels");
+            w.applyVectors(b);
+            assert.equal(b.speed_y, 2, "Error adding body.speed_y");
         });
-        
+    });
+
+    describe("#applyVectors()", function(){
         it("it should calculate new Body.x applying World.friction",function(){
-            var b = new Body({vectors: new Vector({vx:10})});
+            var b = new Body({speed_x: 10});
             var w = new World({friction: new Friction({fx: 0.5})});
             
-            w.update(b);
-            assert.equal(b.x, 5, "Error applying friction, expected value for Body.x is 5")
+            w.applyFriction(b);
+            assert.equal(b.speed_x, 5, "Error applying friction, expected value for Body.x is 5")
         });
         
         it("it should reduce the movment of body through Body.friction", function(){
@@ -194,8 +199,8 @@ describe("Dynamica.World", function(){
             var b = new Body({friction: frc, speed_x: 10});
             var w = new World({friction: new Friction({fx: 0.2})});
             
-            w.update(b);
-            assert.equal(b.x, 7);
+            w.applyFriction(b);
+            assert.equal(b.speed_x, 7);
         });
         
         it("it should reduce the movmen of body through World.friction", function(){
@@ -203,8 +208,8 @@ describe("Dynamica.World", function(){
             var b = new Body({speed_x: 10});
             var w = new World({friction:frc});
             
-            w.update(b);
-            assert.equal(b.x, 2);
+            w.applyFriction(b);
+            assert.equal(b.speed_x, 2);
         });
     });
 });

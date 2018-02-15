@@ -81,10 +81,10 @@ class World {
     walk(){
         this.removeDead();
         this.collideGroups();
-        this.bodies.forEach((a)=>{
-            this.applyFriction(a);
-            this.applyVectors(a);
-            this.update(a);
+        this.bodies.forEach((b)=>{
+            this.applyFriction(b);
+            this.applyVectors(b);
+            this.update(b);
         });
     }
     
