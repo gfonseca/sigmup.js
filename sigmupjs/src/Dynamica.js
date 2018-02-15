@@ -7,7 +7,28 @@ class World {
         this.friction = worldParams.friction || null;
         this.bodies = worldParams.bodies || [];
     }
-    
+
+    registerCollision(callback, groupA, groupB) {
+        
+        if(!Array.isArray(callback)) {
+            callback = [callback];
+        }
+
+        this.collisionRegistrations.push(
+            new CollisionRegistration(callback, groupA, groupB)
+        ); 
+    }
+
+    collideGroups() {
+        this.collisionRegistrations.forEach(function(reg) {
+            if(reg.groupB) {
+                reg.groupA.collideWithGroupB(reg.callback, reg.groupB);
+            } else{
+                reg.groupA.selfCollide(reg.callback);
+            }
+        });
+    }
+
     moveBodies(){
         this.bodies.forEach(function(b) {
             this.update(b);
@@ -57,14 +78,25 @@ class World {
         this.vectors = [];
     }
     
-    walk(actors){
-        actors.forEach(function(a){
+    walk(){
+        this.removeDead();
+        this.collideGroups();
+        this.bodies.forEach((a)=>{
+            this.applyFriction(a);
+            this.applyVectors(a);
             this.update(a);
         });
     }
     
-    update(body) {
-        
+    removeDead() {
+        for (var i in this.bodies) {
+            if(!this.bodies[i].isAlive()) {
+                this.bodies.splice(i, 1);
+            }
+        }
+    }
+
+    applyFriction(body) {
         var frx = 1;
         var fry = 1;
         
@@ -78,6 +110,11 @@ class World {
             fry = body.friction.fy;
         } 
         
+        body.speed_x *= frx;
+        body.speed_y *= fry;
+    }
+     
+    applyVectors(body) {
         var vecx = 0;
         var vecy = 0;
         
@@ -85,13 +122,12 @@ class World {
             vecx += v.vx;
             vecy += v.vy;
         });
-        
+
         body.speed_x += vecx;
         body.speed_y += vecy;
-        
-        body.speed_x *= frx;
-        body.speed_y *= fry;
-        
+    }
+
+    update(body) {
         body.x += body.speed_x;
         body.y += body.speed_y;
     }
@@ -285,7 +321,13 @@ class CollisionGroup {
                 var a = this.colliders[i];
                 var b = this.colliders[j+1];
                 if (a.collide(b)) {
-                    callback(a, b);
+                    if(Array.isArray(callback)) {
+                        callback.forEach((cb)=>{
+                            cb(a, b);
+                        });
+                    }else{
+                        callback(a, b);
+                    }
                 }
             }
         }
@@ -294,14 +336,20 @@ class CollisionGroup {
     collideWithGroupB(callback, groupB){
         this.removeDead();
         if( ! groupB instanceof CollisionGroup ) {
-            throw "groupB must be instance of ActorsGroupvou";
+            throw "groupB must be instance of CollisionGroup";
         }
         for (var i = 0; i <= this.colliders.length - 1; i++) {
             var a = this.colliders[i];
             for (var j = 0; j <= groupB.colliders.length - 1; j++) {
                 var b = groupB.colliders[j];         
                 if (a.collide(b)) {
-                    callback(a, b);
+                    if(Array.isArray(callback)) { 
+                        callback.forEach((cb)=>{
+                            cb(a, b);
+                        });
+                    }else {
+                        callback(a, b);
+                    }
                 }
             }
         }
@@ -342,4 +390,21 @@ class Friction {
     }  
 }
 
-export {Body, Rect, Friction, Vector, CollisionGroup, World};
+function SquareBody(sqr) {
+    var r = new Rect({
+        x: 0,
+        y: 0,
+        width: sqr.width,
+        height: sqr.height,
+        color: sqr.color,
+        visible: Boolean(sqr.visible)
+    });
+
+    return new Body({
+        rect: r,
+        x: sqr.x, 
+        y: sqr.y
+    })
+}
+
+export {Body, Rect, Friction, Vector, CollisionGroup, World, CollisionRegistration, SquareBody};

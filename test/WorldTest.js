@@ -1,4 +1,4 @@
-import {World, Body, Vector, Friction} from "../sigmupjs/src/Dynamica";
+import {World, Body, Vector, Friction, CollisionRegistration, CollisionGroup} from "../sigmupjs/src/Dynamica";
 import {assert} from "chai";
 
 describe("Dynamica.World", function(){
@@ -73,10 +73,69 @@ describe("Dynamica.World", function(){
             assert.ok(w.friction === null, "The clearFriction() method should set the world.friction to null.");
         });
     });
-    
+    describe("#colideGroups()", function(){
+        it("it should accept a list of callbacks.", function(){
+            var bodyA = new Body({x: 0, y: 0});
+            var bodyB = new Body({x: 0, y: 0});
+            
+            var groupA = new CollisionGroup([bodyA, bodyB]);
+            
+            var checkCollisionA = false;
+            var checkCollisionB = false;
+            
+            var w = new World();
+                        
+            w.registerCollision([
+                (a, b)=>{
+                    checkCollisionA = true;
+                },
+                (a, b)=>{
+                    checkCollisionB = true;
+                }
+            ], groupA);
+
+            w.collideGroups();
+            assert.ok(checkCollisionA);
+            assert.ok(checkCollisionB);
+        });
+        
+        it("it should check collisions between groups.", function(){
+            var bodyA = new Body({x: 0, y: 0});
+            var bodyB = new Body({x: 100, y: 100});
+            
+            var groupA = new CollisionGroup(bodyA);
+            var groupB = new CollisionGroup(bodyB);
+            
+            var checkCollision = false;
+            
+            var w = new World();
+            
+            w.registerCollision(()=>{
+                checkCollision = true;
+            }, groupA, groupB);
+            
+            
+            w.collideGroups();
+            assert.notOk(checkCollision);
+            
+            bodyB.x = 0;
+            bodyB.y = 0;
+            w.collideGroups();
+            assert.ok(checkCollision);
+            
+        });
+    });
     describe("#registerCollision()", function(){
         it("it should register groups for check collision.", function(){
+            var w = new World();
             
+            w.registerCollision(()=>{}, "GroupA", "GroupB");
+            assert.equal(w.collisionRegistrations.length, 1);
+            
+            assert.ok(w.collisionRegistrations[0] instanceof CollisionRegistration);
+            
+            w.registerCollision(()=>{}, "GroupA", "GroupB");
+            assert.equal(w.collisionRegistrations.length, 2)
         });
     });
     
