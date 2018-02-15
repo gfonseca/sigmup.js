@@ -9,8 +9,8 @@ class Game {
     this.gameActors = [];
     this.colisionReg = [];
     this.world = null;
-    this.interval = 1000/60;
-    this.lastTime = (new Date()).getTime();
+    this.interval = 1000 / 60
+    this.lastTime = performance.now();
     this.currentTime = 0;
     this.delta = 0;
   }
@@ -20,53 +20,20 @@ class Game {
     this.context.fillStyle = this.backgroundColor;
     this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
   }
-
-  bound(actor) {
-    if(actor.x + actor.width >= this.canvas.width) {
-      actor.x = this.canvas.width - actor.width;
-    }
-    
-    if(actor.x < 0) {
-      actor.x = 0;
-    }
-    
-    if(actor.y + actor.height > this.canvas.height){
-      actor.y = this.canvas.height - actor.height;
-    }
-    
-    if(actor.y < 0){
-      actor.y = 0;
-    }
-  }
   
   render() {
     this.clear();
     this.removeDead();
-    this.world.walk();
-    this.run();
-    this.gameActors.forEach((actor)=>{
-      actor.draw(this.context);
-    });
-    
-  }
-
-  render2() {
-    this.clear();
-    this.colideGroups();
-    this.gameActors.forEach((actor)=>{
-      actor.update();
-      if(actor.boundary) {
-        this.bound(actor);
-      }
-      actor.draw(this.context);
-    });
-    
-    for(var i in this.gameActors){
-      if(!this.gameActors[i].isAlive()) {
-        delete this.gameActors[i];
-        this.gameActors.splice(i, 1);
-      }
+    if(this.world) {
+      this.world.walk();
     }
+    if(this.run) {
+      this.run();
+    }
+    this.gameActors.forEach((actor)=>{
+      actor.draw(this.context);
+    });
+    
   }
   
   addActor(a) {
@@ -84,40 +51,32 @@ class Game {
     }
   }
   
-  colideGroups() {
-    this.colisionReg.forEach((cr)=>{
-      if(!cr.groupB) {
-        cr.groupA.selfColide(cr.callback);
-      }else {
-        cr.groupA.colide(cr.groupB, cr.callback);
-      }
-    });
-  }
-
   removeDead() {
     for (var i in this.gameActors) {
-        if(!this.gameActors[i].isAlive()) {
-            this.gameActors.splice(i, 1);
-        }
+      if(!this.gameActors[i].isAlive()) {
+        this.gameActors.splice(i, 1);
+      }
     }
-}
-  
-  registerColisionGroups(callback, groupA, groupB){
-    this.colisionReg.push(new ColisionRegistration(callback, groupA, groupB));
   }
   
-  loop(fps) {
-    this.currentTime = (new Date()).getTime();
-    this.delta = (this.currentTime - this.lastTime);
-    if(this.delta > this.interval) {
+  loop(timestamp) {
+    this.currentTime = timestamp;
+    this.delta += (timestamp - this.lastTime);
+    this.lastTime = timestamp;
+    if(this.delta >= this.interval) {
       this.render();
-      this.lastTime = this.currentTime - (this.delta % this.interval);
+      this.delta -= this.interval;
+      this.context.fillStyle = "magenta";
+      this.context.font = "10px Arial";
+      this.context.fillText(this.delta, 10, 50);
     }
-
-    window.requestAnimationFrame(()=>{
-      this.loop();
+    
+    window.requestAnimationFrame((timestamp)=>{
+      this.loop(timestamp);
     });
+    
   }
 }
+
 
 export default Game;
