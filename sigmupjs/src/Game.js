@@ -7,11 +7,15 @@ class Game {
     this.canvas = document.getElementById(canvasId || "gameScreen");
     this.context = this.canvas.getContext("2d");
     this.gameActors = [];
-    this.colisionReg = [];
     this.world = null;
-    this.interval = 1000 / 60
-    this.lastTime = performance.now();
-    this.currentTime = 0;
+    
+    this.logFps = false;
+    this.lastFrameTimeMs = 0;
+    this.lastFpsUpdate = 0;
+    this.framesThisSecond = 0;
+    this.maxFPS = 60;
+    this.fps = 30;
+    this.timestep = 1000/60;
     this.delta = 0;
   }
   
@@ -24,16 +28,18 @@ class Game {
   render() {
     this.clear();
     this.removeDead();
+
     if(this.world) {
       this.world.walk();
     }
+
     if(this.run) {
       this.run();
     }
+
     this.gameActors.forEach((actor)=>{
       actor.draw(this.context);
     });
-    
   }
   
   addActor(a) {
@@ -59,24 +65,55 @@ class Game {
     }
   }
   
-  loop(timestamp) {
-    this.currentTime = timestamp;
-    this.delta += (timestamp - this.lastTime);
-    this.lastTime = timestamp;
-    if(this.delta >= this.interval) {
-      this.render();
-      this.delta -= this.interval;
-      this.context.fillStyle = "magenta";
-      this.context.font = "10px Arial";
-      this.context.fillText(this.delta, 10, 50);
-    }
-    
-    window.requestAnimationFrame((timestamp)=>{
+  panic() {
+    this.delta = 0; // discard the unsimulated time
+    // ... snap the player to the authoritative state
+  }
+  
+  gameStart(timestamp) {
+    requestAnimationFrame((timestamp)=>{
       this.loop(timestamp);
     });
+  }
+
+  loop(timestamp) {
+    // Throttle the frame rate.    
+    if (timestamp < this.lastFrameTimeMs + (1000 / this.maxFPS)) {
+      requestAnimationFrame((timestamp)=>{
+        this.loop(timestamp);
+      });
+      return;
+    }
+    this.delta += timestamp - this.lastFrameTimeMs;
+    this.lastFrameTimeMs = timestamp;
     
+    if (timestamp > this.lastFpsUpdate + 1000) {
+      this.fps = 0.25 * this.framesThisSecond + 0.75 * this.fps;
+      
+      this.lastFpsUpdate = timestamp;
+      this.framesThisSecond = 0;
+    }
+    this.framesThisSecond++;
+    
+    var numUpdateSteps = 0;
+    while (this.delta >= this.timestep) {
+      this.render();
+      this.delta -= this.timestep;
+      if (++numUpdateSteps >= 240) {
+        this.panic();
+        break;
+      }
+      
+      if(this.logFps) {
+        console.log("FPS: "+ this.fps);
+      }
+      
+    }
+    
+    requestAnimationFrame((timestamp)=>{
+      this.loop(timestamp);
+    });
   }
 }
-
 
 export default Game;
