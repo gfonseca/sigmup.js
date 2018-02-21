@@ -1,6 +1,3 @@
-import { ColisionRegistration } from "./Group";
-import physics from "./Moves";
-
 class Game {
   constructor(backgroundColor, canvasId) {
     this.backgroundColor = backgroundColor || "black";

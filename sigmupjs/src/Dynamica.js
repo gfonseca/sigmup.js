@@ -336,6 +336,8 @@ class CollisionGroup {
     
     collideWithGroupB(callback, groupB){
         this.removeDead();
+        groupB.removeDead();
+
         if( ! groupB instanceof CollisionGroup ) {
             throw "groupB must be instance of CollisionGroup";
         }
@@ -392,20 +394,16 @@ class Friction {
 }
 
 function SquareBody(sqr) {
+    var b = new Body(sqr);
     var r = new Rect({
         x: 0,
         y: 0,
-        width: sqr.width,
-        height: sqr.height,
-        color: sqr.color,
-        visible: Boolean(sqr.visible)
+        width: sqr.width || 10,
+        height: sqr.height || 10,
+        visible:true
     });
-
-    return new Body({
-        rect: r,
-        x: sqr.x, 
-        y: sqr.y
-    })
+    b.setRects([r]);
+    return b;
 }
 
 export {Body, Rect, Friction, Vector, CollisionGroup, World, CollisionRegistration, SquareBody};
