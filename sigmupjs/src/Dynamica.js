@@ -129,8 +129,8 @@ class World {
     }
 
     update(body) {
-        body.x += body.speed_x;
-        body.y += body.speed_y;
+        body.x = Math.round(body.x + body.speed_x);
+        body.y = Math.round(body.y + body.speed_y);
     }
 }
 
@@ -304,6 +304,7 @@ class CollisionGroup {
         
         if(Array.isArray(colliders)){ 
             this.colliders = this.colliders.concat(colliders);
+            console.log(this.colliders);
         }
         
         if(colliders instanceof Body) { 

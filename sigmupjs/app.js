@@ -1,2 +1,2 @@
-import game from "./space_assaulters";
+import game from "./jumpsquare";
 game();
