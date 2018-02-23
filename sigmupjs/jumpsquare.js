@@ -60,10 +60,37 @@ function boundaryes(game) {
   }));
   
   b.push(new Boundary({
-    x: 400,
+    x: 480,
     y: 200,
     width: 100,
-    height: 100 - 10,
+    height: 50 - 10,
+    visible: true,
+    color:"orchid"
+  }));
+
+  b.push(new Boundary({
+    x: 300,
+    y: 250,
+    width: 100,
+    height: 50 - 10,
+    visible: true,
+    color:"orchid"
+  }));
+
+  b.push(new Boundary({
+    x: 180,
+    y: 350,
+    width: 100,
+    height: 50 - 10,
+    visible: true,
+    color:"orchid"
+  }));
+
+  b.push(new Boundary({
+    x: 30,
+    y: 450,
+    width: 100,
+    height: 50 - 10,
     visible: true,
     color:"orchid"
   }));
@@ -97,16 +124,16 @@ var block = bounds[4];
 g.world = new World();
 var squarei = new Squarei({
   x: 100,
-  y: 100,
+  y: 450,
   width: 20,
   height: 20,
+  speed_y: 0,
   visible: true,
-  // vectors: new Vector({vy: 0.3}),
-  // friction: new Friction({fx: 0.5}),
+  vectors: new Vector({vy: 0.3}),
+  friction: new Friction({fx: 0.5}),
   color: "red"
 });
 
-console.log(squarei)
 var boundGroup = new CollisionGroup();
 var playerGroup = new CollisionGroup();
 playerGroup.addCollider(squarei.body);
@@ -118,37 +145,57 @@ g.addActor(bounds);
 g.addActor(squarei);
 
 g.world.registerCollision((bound, sq)=>{
-  // var bnRe = bound.rects[0];
-  // var sqRe = sq.rects[0];
-  // var sqre_area = sqRe.y + sqRe.height + sq.y;
-  // var bnd_area = bnRe.y + bound.y; 
-  // console.log(sqre_area, bnd_area)
-  // if( 
-  //   sqre_area > bnd_area 
-  //   && sqRe.y + sq.y < bnRe.y + bnRe.height + bound.y
-  // ){
-  //   console.log("vertical")
-  //   sq.speed_y = 0;    
-  //   sq.y = bound.y - sq.rects[0].height; 
-  // }else{
-  //   console.log("horizontal")
-  // }
+  var bR = bound.rects[0];
+  var sR = sq.rects[0];
   
-  }, boundGroup, playerGroup);
+  var dx = ((sR.x + sq.x)+sR.width/2) - ((bR.x + bound.x)+bR.width/2);
+  var dy = ((sR.y + sq.y)+sR.height/2) - ((bR.y + bound.y)+bR.height/2);
+  
+  var width = (sR.width + bR.width)/2;
+  var height = (sR.height + bR.height)/2;
+  var crossWidth = width*dy;
+  var crossHeight = height*dx;
+  var collision = 'none';
+
+  if(crossWidth > crossHeight){
+    collision = (crossWidth > (-crossHeight)) ? 'bottom' : 'left';
+  }else{
+    collision = (crossWidth > -(crossHeight)) ? 'right' : 'top';
+  }
+
+  if(collision == "left" || collision == "right"){
+    sq.speed_x = 0;
+    if(collision == "left") {
+      sq.x = bound.x-sR.width;
+    }else{
+      sq.x = bound.x+bR.width;
+    }
+  }
+
+  if(collision == "top" || collision == "bottom"){
+    sq.speed_y = 0;
+    if(collision == "top") {
+      sq.y = bound.y-sR.height;
+    }else{
+      sq.y = bound.y+bR.height;
+    }
+  }
+}, boundGroup, playerGroup);
   
   g.run = () =>{
-    var sqy =squarei.body.rects[0].y + squarei.body.y;
-    var sqh =squarei.body.rects[0].height;
-    var bly = block.body.rects[0].y + block.body.y;
-    var blh = block.body.rects[0].height;
-    console.log(sqy + sqh, bly);
-    if(
-      sqy + sqh > bly
-      && sqy < bly + blh
-    )  {
-      console.log('hit')
-    }
-
+    // var sqy =squarei.body.rects[0].y + squarei.body.y;
+    // var sqh =squarei.body.rects[0].height;
+    // var bly = block.body.rects[0].y + block.body.y;
+    // var blh = block.body.rects[0].height;
+    // console.log(sqy + sqh, bly);
+    // if(
+    //   sqy + sqh > bly
+    //   && sqy < bly + blh
+    // )  {
+    //   console.log('hit')
+    // }
+    
+    console.log(squarei.body.speed_y);
     if(joystick.left) { 
       squarei.body.speed_x = -5
     }
@@ -162,7 +209,7 @@ g.world.registerCollision((bound, sq)=>{
     }
   };
   
-  g.canvas.addEventListener("mousemove", (e)=>{
+  g.canvas.addEventListener("click", (e)=>{
     squarei.body.x = e.layerX-10;
     squarei.body.y = e.layerY-10;
   });

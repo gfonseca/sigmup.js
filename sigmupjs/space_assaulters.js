@@ -57,7 +57,6 @@ class Destroyer {
   }
 }
 
-
 class Boundary {
   constructor(params) {
     this.body = new SquareBody(params);
@@ -259,7 +258,7 @@ window.addEventListener("keyup", (e)=>{
     joystick.right = false;
   }
   if(e.code == "Space") {
-    joystick.space = false                ;
+    joystick.space = false;
   }
 });
 
